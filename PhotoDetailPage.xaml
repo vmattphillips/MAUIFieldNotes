@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="FieldNotesApp.PhotoDetailPage"
+             Title="Photo Details">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="15">
+
+            <!-- Display the captured photo -->
+            <Image x:Name="PhotoImage"
+                   HeightRequest="300"
+                   Aspect="AspectFit"
+                   IsVisible="False" />
+
+            <toolkit:MediaElement x:Name="VideoPlayer"
+                                  HeightRequest="300"
+                                  ShouldShowPlaybackControls="True"
+                                  IsVisible="False" />
+
+            <Border Stroke="Gray"
+                    BackgroundColor="Gray"
+                    StrokeShape="RoundRectangle 20,20,20,20"
+                    Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Entry Name"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                    <Editor x:Name="EntryNameField"
+                            TextColor="White"
+                            HeightRequest="150" />
+                </VerticalStackLayout>
+            </Border>
+
+
+            <!-- Geotag section -->
+            <Border Stroke="Gray"
+                    Padding="10"
+                    StrokeShape="RoundRectangle 20,20,20,20"
+                    BackgroundColor="Gray">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Location"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                    <Button x:Name="GeotagButton"
+                            Text="Add Geotag"
+                            Clicked="OnGeotagClicked" />
+                    <Label x:Name="LocationLabel"
+                           Text="No location added"
+                           FontSize="14" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Voice recording section -->
+            <Border Stroke="Gray"
+                    BackgroundColor="Gray"
+                    StrokeShape="RoundRectangle 20,20,20,20"
+                    Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Voice Recording"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                    <Button x:Name="RecordButton"
+                            Text="Record Audio"
+                            Clicked="OnRecordClicked" />
+                    <Label x:Name="RecordingLabel"
+                           Text="No recording added"
+                           FontSize="14" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Text notes section -->
+            <Border Stroke="Gray"
+                    BackgroundColor="Gray"
+                    StrokeShape="RoundRectangle 20,20,20,20"
+                    Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Notes"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                    <Editor x:Name="NotesEditor"
+                            Placeholder="Add notes here..."
+                            PlaceholderColor="White"
+                            TextColor="White"
+                            HeightRequest="150" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Save button -->
+            <Button Text="Save Entry"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    Clicked="OnSaveClicked"
+                    Margin="0,20,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
