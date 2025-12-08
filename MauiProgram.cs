@@ -12,6 +12,7 @@ namespace FieldNotesApp
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkitMediaElement()
+                .UseMauiCommunityToolkitCamera()
                 .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {

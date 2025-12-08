@@ -1,30 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FieldNotesApp.MainPage">
+             x:Class="FieldNotesApp.MainPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:icons="clr-namespace:FieldNotesApp.Icons">
 
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Sticky Top Menu using Border -->
-        <Border Grid.Row="0"
+        <Border x:Name="TopMenu"
+                Grid.Row="0"
                 BackgroundColor="Grey"
                 StrokeShape="RoundRectangle 0,0,20,20"
                 VerticalOptions="Start"
                 HorizontalOptions="Fill"
                 HeightRequest="60">
-            <!-- Set fixed height -->
             <HorizontalStackLayout Spacing="30"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center">
                 <Label Text="Saved Notes"
                        FontSize="18"
                        FontAttributes="Bold"
-                       Margin="0,0,0,
-                       0" />
+                       Margin="0,0,0,0" />
             </HorizontalStackLayout>
         </Border>
-        
+
         <!-- Entries list -->
-        <ScrollView Grid.Row="1"
+        <ScrollView x:Name="EntryScrollView"
+                    Grid.Row="1"
                     Margin="0,0,0,0"
                     Padding="10">
             <VerticalStackLayout x:Name="EntriesContainer"
@@ -49,11 +51,15 @@
                                         <Label Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy HH:mm}'}"
                                                FontSize="12" />
                                     </VerticalStackLayout>
-                                    <Label Grid.Column="1"
-                                           FontFamily="FASolid"
-                                           Text="&#xf1f8;"
-                                           FontSize="24"
-                                           VerticalOptions="Center" />
+                                    <Border BackgroundColor="DarkRed"
+                                            HorizontalOptions="End"
+                                            StrokeShape="RoundRectangle 20,20,20,20">
+                                        <Label Grid.Column="1"
+                                               FontFamily="FASolid"
+                                               Text="{x:Static icons:FontAwesomeIcons.Trash}"
+                                               FontSize="24"
+                                               VerticalOptions="Center" />
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -61,27 +67,74 @@
                 </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
-        
 
-        <!-- Sticky Bottom Menu using Border -->
-        <Border Grid.Row="2"
+        <!-- Camera View Container (Hidden by default) -->
+        <Border x:Name="CameraContainer"
+                Stroke="Grey"
+                IsVisible="false"
+                Grid.Row="1"
+                Margin="0,0,0,0"
+                Padding="0">
+            <toolkit:CameraView x:Name="CameraWindow"
+                                MediaCaptured="CameraCaptured" />
+        </Border>
+
+        <!-- Bottom Menu for Camera Controls (Hidden by default) -->
+        <Border x:Name="BottomCameraMenu"
+                Grid.Row="2"
+                BackgroundColor="Grey"
+                StrokeShape="RoundRectangle 20,20,0,0"
+                Padding="10"
+                VerticalOptions="End"
+                HorizontalOptions="Fill"
+                HeightRequest="60"
+                IsVisible="false">
+            <HorizontalStackLayout Spacing="15"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                <Button x:Name="CloseCameraButton"
+                        FontFamily="FASolid"
+                        Text="{x:Static icons:FontAwesomeIcons.XMark}"
+                        Clicked="OnCloseCameraClicked"
+                        BackgroundColor="DarkRed"
+                        WidthRequest="75"
+                        FontSize="16"
+                        IsVisible="false" />
+                <Button x:Name="TakePhotoButton"
+                        FontFamily="FASolid"
+                        Text="{x:Static icons:FontAwesomeIcons.Camera}"
+                        Clicked="OnTakePhotoClicked"
+                        WidthRequest="75"
+                        FontSize="16"
+                        IsVisible="false" />
+                <Button x:Name="RecordVideoButton"
+                        FontFamily="FASolid"
+                        Text="{x:Static icons:FontAwesomeIcons.Video}"
+                        Clicked="OnRecordVideoClicked"
+                        WidthRequest="75"
+                        FontSize="16"
+                        IsVisible="false" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Sticky Bottom Menu using Border (Default View) -->
+        <Border x:Name="BottomMenu"
+                Grid.Row="2"
                 BackgroundColor="Grey"
                 StrokeShape="RoundRectangle 20,20,0,0"
                 Padding="10"
                 VerticalOptions="End"
                 HorizontalOptions="Fill"
                 HeightRequest="60">
-            <!-- Set fixed height -->
             <HorizontalStackLayout Spacing="30"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center">
-                <Button x:Name="TakePhotoButton"
-                        Text="Take Photo"
-                        Clicked="OnTakePhotoClicked"
-                        HorizontalOptions="Center" />
-                <Button x:Name="TakeVideoButton"
-                        Text="Record Video"
-                        Clicked="OnRecordVideoClicked"
+                <Button x:Name="OpenCameraButton"
+                        FontFamily="FASolid"
+                        Text="{x:Static icons:FontAwesomeIcons.Plus}"
+                        WidthRequest="75"
+                        Clicked="OnOpenCameraClicked"
+                        FontSize="16"
                         HorizontalOptions="Center" />
             </HorizontalStackLayout>
         </Border>

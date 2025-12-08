@@ -29,46 +29,51 @@
                            FontAttributes="Bold" />
                     <Editor x:Name="EntryNameField"
                             TextColor="White"
-                            HeightRequest="150" />
+                            HeightRequest="15" />
                 </VerticalStackLayout>
             </Border>
 
 
-            <!-- Geotag section -->
-            <Border Stroke="Gray"
-                    Padding="10"
-                    StrokeShape="RoundRectangle 20,20,20,20"
-                    BackgroundColor="Gray">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Location"
-                           FontSize="18"
-                           FontAttributes="Bold" />
-                    <Button x:Name="GeotagButton"
-                            Text="Add Geotag"
-                            Clicked="OnGeotagClicked" />
-                    <Label x:Name="LocationLabel"
-                           Text="No location added"
-                           FontSize="14" />
-                </VerticalStackLayout>
-            </Border>
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="10">
+                <!-- Geotag section -->
+                <Border Grid.Column="0"
+                        Stroke="Gray"
+                        Padding="10"
+                        StrokeShape="RoundRectangle 20,20,20,20"
+                        BackgroundColor="Gray">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Location"
+                               FontSize="18"
+                               FontAttributes="Bold" />
+                        <Button x:Name="GeotagButton"
+                                Text="Add Geotag"
+                                Clicked="OnGeotagClicked" />
+                        <Label x:Name="LocationLabel"
+                               Text="No location added"
+                               FontSize="14" />
+                    </VerticalStackLayout>
+                </Border>
 
-            <!-- Voice recording section -->
-            <Border Stroke="Gray"
-                    BackgroundColor="Gray"
-                    StrokeShape="RoundRectangle 20,20,20,20"
-                    Padding="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Voice Recording"
-                           FontSize="18"
-                           FontAttributes="Bold" />
-                    <Button x:Name="RecordButton"
-                            Text="Record Audio"
-                            Clicked="OnRecordClicked" />
-                    <Label x:Name="RecordingLabel"
-                           Text="No recording added"
-                           FontSize="14" />
-                </VerticalStackLayout>
-            </Border>
+                <!-- Voice recording section -->
+                <Border Grid.Column="1"
+                        Stroke="Gray"
+                        BackgroundColor="Gray"
+                        StrokeShape="RoundRectangle 20,20,20,20"
+                        Padding="10">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Voice Recording"
+                               FontSize="18"
+                               FontAttributes="Bold" />
+                        <Button x:Name="RecordButton"
+                                Text="Record Audio"
+                                Clicked="OnRecordClicked" />
+                        <Label x:Name="RecordingLabel"
+                               Text="No recording added"
+                               FontSize="14" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
             <!-- Text notes section -->
             <Border Stroke="Gray"
@@ -83,7 +88,7 @@
                             Placeholder="Add notes here..."
                             PlaceholderColor="White"
                             TextColor="White"
-                            HeightRequest="150" />
+                            HeightRequest="120" />
                 </VerticalStackLayout>
             </Border>
 
