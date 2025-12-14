@@ -15,10 +15,6 @@ namespace FieldNotesApp
         private bool _isVideo;
         private string _tempVideoPath;
         private int _entryId;
-        private int _mediaId; // Store existing media ID
-        private int? _voiceRecordingId; // Store existing voice recording ID
-        private bool _isEditMode; // Track if we're editing an existing entry
-        private bool _mediaChanged; // Track if media was replaced
 
         public PhotoDetailPage(DatabaseService database, byte[] mediaBytes, bool isVideo = false, int entryId = 0)
         {
@@ -26,9 +22,7 @@ namespace FieldNotesApp
             _database = database;
             _mediaBytes = mediaBytes;
             _isVideo = isVideo;
-            _entryId = entryId;
-            _isEditMode = entryId > 0;
-            _mediaChanged = false;
+            _entryId = entryId;  // Store the entry ID if editing
 
             if (isVideo)
             {
@@ -45,7 +39,7 @@ namespace FieldNotesApp
             }
 
             // If editing existing entry, load its data
-            if (_isEditMode)
+            if (_entryId > 0)
             {
                 LoadExistingEntry(_entryId);
             }
@@ -62,11 +56,6 @@ namespace FieldNotesApp
                 var entry = await _database.GetEntryAsync(entryId);
                 if (entry != null)
                 {
-                    // Store existing IDs to avoid re-saving
-                    _mediaId = entry.MediaId;
-                    _voiceRecordingId = entry.VoiceRecordingId;
-
-                    // Load entry data
                     EntryNameField.Text = entry.EntryName;
                     _latitude = entry.Latitude;
                     _longitude = entry.Longitude;
@@ -76,21 +65,11 @@ namespace FieldNotesApp
                     {
                         LocationLabel.Text = $"Lat: {entry.Latitude:F6}, Lon: {entry.Longitude:F6}";
                     }
-
-                    // Load voice recording if exists
-                    if (entry.VoiceRecordingId.HasValue)
-                    {
-                        var voiceRecording = await _database.GetVoiceRecordingAsync(entry.VoiceRecordingId.Value);
-                        if (voiceRecording != null)
-                        {
-                            _voiceRecordingBytes = voiceRecording.Data;
-                        }
-                    }
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Failed to load entry: {ex.Message}", "OK");
+                await DisplayAlertAsync("Error", $"Failed to load entry: {ex.Message}", "OK");
             }
         }
 
@@ -121,77 +100,49 @@ namespace FieldNotesApp
                 }
                 else
                 {
-                    await DisplayAlert("Permission Denied", "Location permission is required", "OK");
+                    await DisplayAlertAsync("Permission Denied", "Location permission is required", "OK");
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Failed to get location: {ex.Message}", "OK");
+                await DisplayAlertAsync("Error", $"Failed to get location: {ex.Message}", "OK");
             }
         }
 
         private async void OnRecordClicked(object sender, EventArgs e)
         {
-            await DisplayAlert("Coming Soon", "Voice recording will be implemented next", "OK");
+            DisplayAlertAsync("Coming Soon", "Voice recording will be implemented next", "OK");
         }
 
         private async void OnSaveClicked(object sender, EventArgs e)
         {
             try
             {
-                int finalMediaId;
-                int? finalVoiceRecordingId = _voiceRecordingId;
+                // Save media first to get the ID
+                var mediaId = await _database.SaveMediaAsync(_mediaBytes, _isVideo);
 
-                // Only save media if it's new or changed
-                if (_isEditMode && !_mediaChanged)
-                {
-                    // Editing existing entry and media hasn't changed - reuse existing media ID
-                    finalMediaId = _mediaId;
-                }
-                else
-                {
-                    // New entry or media was replaced - save new media
-                    finalMediaId = await _database.SaveMediaAsync(_mediaBytes, _isVideo);
-
-                    // If we're editing and media changed, optionally delete old media
-                    // (Uncomment if you want to clean up old media files)
-                    // if (_isEditMode && _mediaChanged && _mediaId > 0)
-                    // {
-                    //     await _database.DeleteMediaAsync(_mediaId);
-                    // }
-                }
-
-                // Save voice recording only if it's new or changed
+                // Save voice recording if exists
+                int? voiceRecordingId = null;
                 if (_voiceRecordingBytes != null)
                 {
-                    // Check if voice recording is new (not loaded from existing entry)
-                    if (!_isEditMode || _voiceRecordingId == null)
-                    {
-                        // New voice recording - save it
-                        finalVoiceRecordingId = await _database.SaveVoiceRecordingAsync(_voiceRecordingBytes, 0);
-                    }
-                    // If editing and voice recording exists, keep the existing ID
-                    // Voice recording data is already in _voiceRecordingBytes from LoadExistingEntry
+                    voiceRecordingId = await _database.SaveVoiceRecordingAsync(_voiceRecordingBytes, 0);
                 }
 
-                // Create/Update the entry
+                // Create and save the entry
                 var entry = new PhotoEntry
                 {
-                    Id = _entryId, // Will be 0 for new entries, existing ID for updates
                     IsVideo = _isVideo,
                     EntryName = EntryNameField.Text,
-                    MediaId = finalMediaId,
-                    VoiceRecordingId = finalVoiceRecordingId,
+                    MediaId = mediaId,
+                    VoiceRecordingId = voiceRecordingId,
                     Latitude = _latitude,
                     Longitude = _longitude,
-                    Notes = NotesEditor.Text,
-                    CreatedAt = _isEditMode ? (await _database.GetEntryAsync(_entryId)).CreatedAt : DateTime.Now
+                    Notes = NotesEditor.Text
                 };
 
                 await _database.SavePhotoEntryAsync(entry);
 
-                string message = _isEditMode ? "Entry updated successfully!" : "Entry saved to database!";
-                await DisplayAlert("Success", message, "OK");
+                await DisplayAlertAsync("Success", "Entry saved to database!", "OK");
 
                 // Clean up temp video file
                 if (!string.IsNullOrEmpty(_tempVideoPath) && File.Exists(_tempVideoPath))
@@ -203,32 +154,7 @@ namespace FieldNotesApp
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Failed to save: {ex.Message}", "OK");
-            }
-        }
-
-        // Optional: Add method to replace media (for future feature)
-        private void OnReplaceMediaClicked(object sender, EventArgs e)
-        {
-            _mediaChanged = true;
-            // Implement media replacement logic here if needed
-        }
-
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            // Clean up temp video file
-            if (!string.IsNullOrEmpty(_tempVideoPath) && File.Exists(_tempVideoPath))
-            {
-                try
-                {
-                    File.Delete(_tempVideoPath);
-                }
-                catch
-                {
-                    // Ignore cleanup errors
-                }
+                await DisplayAlertAsync("Error", $"Failed to save: {ex.Message}", "OK");
             }
         }
     }
