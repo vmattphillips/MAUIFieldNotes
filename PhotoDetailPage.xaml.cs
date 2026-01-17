@@ -8,35 +8,31 @@ namespace FieldNotesApp
     public partial class PhotoDetailPage : ContentPage
     {
         private readonly DatabaseService _database;
-        private byte[] _mediaBytes;
         private double? _latitude;
         private double? _longitude;
         private byte[] _voiceRecordingBytes;
-        private bool _isVideo;
-        private string _tempVideoPath;
         private int _entryId;
+        List<string> _filePaths;
 
-        public PhotoDetailPage(DatabaseService database, byte[] mediaBytes, bool isVideo = false, int entryId = 0)
+        public PhotoDetailPage(DatabaseService database, List<string> filepaths, int entryId = 0)
         {
             InitializeComponent();
             _database = database;
-            _mediaBytes = mediaBytes;
-            _isVideo = isVideo;
             _entryId = entryId;  // Store the entry ID if editing
-
-            if (isVideo)
-            {
-                VideoPlayer.IsVisible = true;
-                _tempVideoPath = Path.Combine(FileSystem.CacheDirectory, $"temp_video_{Guid.NewGuid()}.mp4");
-                File.WriteAllBytes(_tempVideoPath, mediaBytes);
-                VideoPlayer.Source = MediaSource.FromFile(_tempVideoPath);
-                VideoPlayer.ShouldAutoPlay = false;
-            }
-            else
-            {
-                PhotoImage.IsVisible = true;
-                PhotoImage.Source = ImageSource.FromStream(() => new MemoryStream(mediaBytes));
-            }
+            this._filePaths = filepaths;
+            //if (isVideo)
+            //{
+            //    VideoPlayer.IsVisible = true;
+            //    _tempVideoPath = Path.Combine(FileSystem.CacheDirectory, $"temp_video_{Guid.NewGuid()}.mp4");
+            //    File.WriteAllBytes(_tempVideoPath, mediaBytes);
+            //    VideoPlayer.Source = MediaSource.FromFile(_tempVideoPath);
+            //    VideoPlayer.ShouldAutoPlay = false;
+            //}
+            //else
+            //{
+            //    PhotoImage.IsVisible = true;
+            //    PhotoImage.Source = ImageSource.FromStream(() => new MemoryStream(mediaBytes));
+            //}
 
             // If editing existing entry, load its data
             if (_entryId > 0)
@@ -45,7 +41,7 @@ namespace FieldNotesApp
             }
             else
             {
-                EntryNameField.Text = DateTime.Now.Date.ToString() + "_" + (isVideo ? "video" : "image");
+                EntryNameField.Text = "Note " +  DateTime.Now.Date.ToString();
             }
         }
 
@@ -118,8 +114,6 @@ namespace FieldNotesApp
         {
             try
             {
-                // Save media first to get the ID
-                var mediaId = await _database.SaveMediaAsync(_mediaBytes, _isVideo);
 
                 // Save voice recording if exists
                 int? voiceRecordingId = null;
@@ -129,26 +123,19 @@ namespace FieldNotesApp
                 }
 
                 // Create and save the entry
-                var entry = new PhotoEntry
+                var entry = new NoteEntry
                 {
-                    IsVideo = _isVideo,
                     EntryName = EntryNameField.Text,
-                    MediaId = mediaId,
                     VoiceRecordingId = voiceRecordingId,
                     Latitude = _latitude,
                     Longitude = _longitude,
-                    Notes = NotesEditor.Text
+                    Notes = NotesEditor.Text,
+                    FilePaths = this._filePaths
                 };
 
-                await _database.SavePhotoEntryAsync(entry);
+                await _database.SaveNoteEntryAsync(entry);
 
                 await DisplayAlertAsync("Success", "Entry saved to database!", "OK");
-
-                // Clean up temp video file
-                if (!string.IsNullOrEmpty(_tempVideoPath) && File.Exists(_tempVideoPath))
-                {
-                    File.Delete(_tempVideoPath);
-                }
 
                 await Navigation.PopAsync();
             }

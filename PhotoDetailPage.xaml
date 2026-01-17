@@ -9,15 +9,17 @@
                              Spacing="15">
 
             <!-- Display the captured photo -->
-            <Image x:Name="PhotoImage"
+            <!--<Image x:Name="PhotoImage"
                    HeightRequest="300"
                    Aspect="AspectFit"
                    IsVisible="False" />
 
             <toolkit:MediaElement x:Name="VideoPlayer"
                                   HeightRequest="300"
-                                  ShouldShowPlaybackControls="True"
-                                  IsVisible="False" />
+                                  ShouldShowPlaybackControls="true"
+                                  IsVisible="False" />-->
+            
+
 
             <Border Stroke="Gray"
                     BackgroundColor="Gray"

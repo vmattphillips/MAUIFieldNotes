@@ -22,7 +22,7 @@ namespace FieldNotesApp
 
             builder.Services.AddSingleton<DatabaseService>();
             builder.Services.AddTransient<MainPage>();
-            builder.Services.AddTransient<PhotoDetailPage>();
+            //builder.Services.AddTransient<PhotoDetailPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

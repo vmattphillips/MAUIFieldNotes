@@ -13,37 +13,14 @@ namespace FieldNotesApp.Services
 
         private async Task InitAsync()
         {
-            if (_database != null)
-                return;
 
-            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "fieldnotes.db3");
-            _database = new SQLiteAsyncConnection(dbPath);
-
-            await _database.CreateTableAsync<PhotoEntry>();
-            await _database.CreateTableAsync<Media>();
-            await _database.CreateTableAsync<VoiceRecording>();
-        }
-
-        // Media operations
-        public async Task<int> SaveMediaAsync(byte[] mediaBytes, bool isVideo)
-        {
-            await InitAsync();
-
-            var media = new Media
+            if (_database == null)
             {
-                Data = mediaBytes,
-                IsVideo = isVideo,
-                MimeType = isVideo ? "video/mp4" : "image/jpeg"
-            };
-
-            await _database.InsertAsync(media);
-            return media.Id;
-        }
-
-        public async Task<Media> GetMediaAsync(int id)
-        {
-            await InitAsync();
-            return await _database.Table<Media>().Where(m => m.Id == id).FirstOrDefaultAsync();
+                var dbPath = Path.Combine(FileSystem.AppDataDirectory, "fieldnotes.db3");
+                _database = new SQLiteAsyncConnection(dbPath);
+            }
+            await _database.CreateTableAsync<NoteEntry>();
+            await _database.CreateTableAsync<VoiceRecording>();
         }
 
         // Voice recording operations
@@ -67,8 +44,8 @@ namespace FieldNotesApp.Services
             return await _database.Table<VoiceRecording>().Where(v => v.Id == id).FirstOrDefaultAsync();
         }
 
-        // PhotoEntry operations
-        public async Task<int> SavePhotoEntryAsync(PhotoEntry entry)
+        // NoteEntry operations
+        public async Task<int> SaveNoteEntryAsync(NoteEntry entry)
         {
             await InitAsync();
 
@@ -84,29 +61,23 @@ namespace FieldNotesApp.Services
             return entry.Id;
         }
 
-        public async Task<List<PhotoEntry>> GetAllEntriesAsync()
+        public async Task<List<NoteEntry>> GetAllEntriesAsync()
         {
             await InitAsync();
-            return await _database.Table<PhotoEntry>()
+            return await _database.Table<NoteEntry>()
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
 
-        public async Task<PhotoEntry> GetEntryAsync(int id)
+        public async Task<NoteEntry> GetEntryAsync(int id)
         {
             await InitAsync();
-            return await _database.Table<PhotoEntry>().Where(e => e.Id == id).FirstOrDefaultAsync();
+            return await _database.Table<NoteEntry>().Where(e => e.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<int> DeleteEntryAsync(PhotoEntry entry)
+        public async Task<int> DeleteEntryAsync(NoteEntry entry)
         {
             await InitAsync();
-
-            // Delete associated media
-            if (entry.MediaId > 0)
-            {
-                await _database.DeleteAsync<Media>(entry.MediaId);
-            }
 
             // Delete associated voice recording
             if (entry.VoiceRecordingId.HasValue)
@@ -119,15 +90,14 @@ namespace FieldNotesApp.Services
         }
 
         // Helper method to get entry with all related data
-        public async Task<(PhotoEntry entry, Media media, VoiceRecording voiceRecording)> GetFullEntryAsync(int entryId)
+        public async Task<(NoteEntry entry, VoiceRecording voiceRecording)> GetFullEntryAsync(int entryId)
         {
             await InitAsync();
 
             var entry = await GetEntryAsync(entryId);
             if (entry == null)
-                return (null, null, null);
+                return (null, null);
 
-            var media = await GetMediaAsync(entry.MediaId);
             VoiceRecording voiceRecording = null;
 
             if (entry.VoiceRecordingId.HasValue)
@@ -135,7 +105,7 @@ namespace FieldNotesApp.Services
                 voiceRecording = await GetVoiceRecordingAsync(entry.VoiceRecordingId.Value);
             }
 
-            return (entry, media, voiceRecording);
+            return (entry, voiceRecording);
         }
     }
 }

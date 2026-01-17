@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FieldNotesApp.MainPage">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,*">
         <!-- Sticky Top Menu using Border -->
         <Border Grid.Row="0"
                 BackgroundColor="Grey"
@@ -63,7 +63,9 @@
         </ScrollView>
         
 
-        <!-- Sticky Bottom Menu using Border -->
+        
+        <!--Old Bottom Menu-->
+        <!-- Sticky Bottom Menu using Border --><!--
         <Border Grid.Row="2"
                 BackgroundColor="Grey"
                 StrokeShape="RoundRectangle 20,20,0,0"
@@ -71,10 +73,14 @@
                 VerticalOptions="End"
                 HorizontalOptions="Fill"
                 HeightRequest="60">
-            <!-- Set fixed height -->
+            --><!-- Set fixed height --><!--
             <HorizontalStackLayout Spacing="30"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center">
+                <Button x:Name="AddEntryButton"
+                        Text="Add Entry"
+                        Clicked="OnAddEntryClicked"
+                        HorizontalOptions="End" />
                 <Button x:Name="TakePhotoButton"
                         Text="Take Photo"
                         Clicked="OnTakePhotoClicked"
@@ -84,7 +90,148 @@
                         Clicked="OnRecordVideoClicked"
                         HorizontalOptions="Center" />
             </HorizontalStackLayout>
-        </Border>
+        </Border>-->
+
+        <!-- Floating Action Button Menu -->
+        <AbsoluteLayout Grid.Row="1">
+            <!-- Overlay background -->
+            <BoxView x:Name="MenuOverlay"
+                     Color="Black"
+                     Opacity="0"
+                     IsVisible="False"
+                     AbsoluteLayout.LayoutBounds="0,0,1,1"
+                     AbsoluteLayout.LayoutFlags="All">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnOverlayTapped" />
+                </BoxView.GestureRecognizers>
+            </BoxView>
+
+            <!-- Menu Items -->
+            <VerticalStackLayout x:Name="MenuItems"
+                                 Spacing="15"
+                                 IsVisible="False"
+                                 AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+                                 AbsoluteLayout.LayoutFlags="PositionProportional"
+                                 Margin="0,0,20,100">
+
+                <Border StrokeThickness="0"
+                        StrokeShape="RoundRectangle 25"
+                        Padding="20,15"
+                        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=6, Opacity=0.3}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="#2196F3"
+                                          Offset="0.0" />
+                            <GradientStop Color="#1976D2"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <HorizontalStackLayout Spacing="10">
+                        <!--<Label Text="📷"
+                               FontSize="20"
+                               VerticalOptions="Center" />-->
+                        <Label Text="Add from Gallery"
+                               TextColor="White"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnAddExistingClicked" />
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <Border StrokeThickness="0"
+                        StrokeShape="RoundRectangle 25"
+                        Padding="20,15"
+                        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=6, Opacity=0.3}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="#FF9800"
+                                          Offset="0.0" />
+                            <GradientStop Color="#F57C00"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <HorizontalStackLayout Spacing="10">
+                        <!--<Label Text="📸"
+                               FontSize="20"
+                               VerticalOptions="Center" />-->
+                        <Label Text="Take Photo"
+                               TextColor="White"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTakePhotoClicked" />
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <Border StrokeThickness="0"
+                        StrokeShape="RoundRectangle 25"
+                        Padding="20,15"
+                        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=6, Opacity=0.3}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="#E91E63"
+                                          Offset="0.0" />
+                            <GradientStop Color="#C2185B"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <HorizontalStackLayout Spacing="10">
+                        <!--<Label Text="🎥"
+                               FontSize="20"
+                               VerticalOptions="Center" />-->
+                        <Label Text="Record Video"
+                               TextColor="White"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRecordVideoClicked" />
+                    </Border.GestureRecognizers>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Main FAB Button -->
+            <Border x:Name="FabButton"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 30"
+                    WidthRequest="60"
+                    HeightRequest="60"
+                    AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    Margin="0,0,20,20"
+                    Shadow="{Shadow Brush=Black, Offset='0,4', Radius=8, Opacity=0.3}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="1,1">
+                        <GradientStop Color="#4CAF50"
+                                      Offset="0.0" />
+                        <GradientStop Color="#45a049"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Label x:Name="FabIcon"
+                       Text="+"
+                       FontSize="36"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Margin="0,-2,0,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFabClicked" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Border>
+        </AbsoluteLayout>
     </Grid>
 
 </ContentPage>

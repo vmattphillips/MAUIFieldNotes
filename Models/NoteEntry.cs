@@ -2,14 +2,13 @@
 
 namespace FieldNotesApp.Models
 {
-    [Table("photo_entries")]
-    public class PhotoEntry
+    public class NoteEntry
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-        public string EntryName { get; set; }
 
-        public bool IsVideo { get; set; }
+        public List<string> FilePaths { get; set; }
+        public string EntryName { get; set; }
 
         [MaxLength(500)]
         public string Notes { get; set; }
@@ -19,28 +18,9 @@ namespace FieldNotesApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public int MediaId { get; set; }  // Foreign key to media table
-
         public int? VoiceRecordingId { get; set; } // Optional Foreign key to voice recording
     }
 
-    [Table("media")]
-    public class Media
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-
-        public bool IsVideo { get; set; }
-
-        [MaxLength(50)]
-        public string MimeType { get; set; } // "image/jpeg" or "video/mp4"
-
-        public byte[] Data { get; set; } // Store the actual bytes
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-    }
-
-    [Table("voice_recordings")]
     public class VoiceRecording
     {
         [PrimaryKey, AutoIncrement]

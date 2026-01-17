@@ -8,6 +8,8 @@ namespace FieldNotesApp
     public partial class MainPage : ContentPage
     {
         private readonly DatabaseService _database;
+        private bool _isMenuOpen = false;
+        private bool _menuInitialized = false;
 
         public MainPage(DatabaseService database)
         {
@@ -19,6 +21,12 @@ namespace FieldNotesApp
         {
             base.OnAppearing();
             LoadEntries();  // Refresh list when returning to page
+            
+            // Initialize menu animation on first load
+            if (!_menuInitialized)
+            {
+                _ = InitializeMenu();
+            }
         }
 
         private async void LoadEntries()
@@ -31,9 +39,8 @@ namespace FieldNotesApp
                 var displayEntries = entries.Select(e => new EntryDisplayModel
                 {
                     Id = e.Id,
-                    IsVideo = e.IsVideo,
+                    EntryName = e.EntryName,
                     CreatedAt = e.CreatedAt,
-                    MediaTypeDisplay = $"{(e.IsVideo ? "Video" : "Photo")} - {e.EntryName}",
                 }).OrderByDescending(e => e.CreatedAt).ToList();
 
                 EntriesCollectionView.ItemsSource = displayEntries;
@@ -53,9 +60,7 @@ namespace FieldNotesApp
 
                 if (photoEntry != null)
                 {
-
-                    var mediaEntry = await _database.GetMediaAsync(photoEntry.MediaId);
-                    await Navigation.PushAsync(new PhotoDetailPage(_database, mediaEntry.Data, photoEntry.IsVideo, photoEntry.Id));
+                    await Navigation.PushAsync(new PhotoDetailPage(_database, photoEntry.FilePaths, photoEntry.Id));
                 }
 
                 // Deselect the item
@@ -63,12 +68,43 @@ namespace FieldNotesApp
             }
         }
 
-        private async void OnTakePhotoClicked(object sender, EventArgs e)
+        private async void OnAddExistingClicked(object sender, EventArgs e)
         {
+            await CloseMenu();
             try
             {
-                TakePhotoButton.IsEnabled = false;
+                var mediaFiles = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
+                {
+                    SelectionLimit = 50,
+                    CompressionQuality = 100,
+                    RotateImage = true,
+                    PreserveMetaData = true,
+                });
 
+                if (mediaFiles != null && mediaFiles.Any())
+                {
+                    var filePaths = new List<string>();
+
+                    foreach (var media in mediaFiles)
+                    {
+                        filePaths.Add(media.FullPath);
+                    }
+
+                    // Navigate once with all file paths
+                    await Navigation.PushAsync(new PhotoDetailPage(_database, filePaths));
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync("Error", $"Failed to select media: {ex.Message}", "OK");
+            }
+        }
+
+        private async void OnTakePhotoClicked(object sender, EventArgs e)
+        {
+            await CloseMenu();
+            try
+            {
                 var cameraStatus = await Permissions.CheckStatusAsync<Permissions.Camera>();
                 if (cameraStatus != PermissionStatus.Granted)
                 {
@@ -91,49 +127,36 @@ namespace FieldNotesApp
 
                 if (photo != null)
                 {
-                    byte[] photoBytes;
-                    using (var stream = await photo.OpenReadAsync())
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await stream.CopyToAsync(memoryStream);
-                        photoBytes = memoryStream.ToArray();
-                    }
 #if ANDROID
-                    AndroidMediaSaver.SavePhotoToDcimAsync(photo);
+                    await AndroidMediaSaver.SavePhotoToDcimAsync(photo);
                     Toast.Make("A copy has been saved to your camera folder").Show();
 #endif
 
-                    await Navigation.PushAsync(new PhotoDetailPage(_database, photoBytes, isVideo: false));
+                    var filePaths = new List<string> { photo.FullPath };
+                    await Navigation.PushAsync(new PhotoDetailPage(_database, filePaths));
                 }
             }
             catch (Exception ex)
             {
                 await DisplayAlertAsync("Error", $"Failed: {ex.Message}", "OK");
             }
-            finally
-            {
-                TakePhotoButton.IsEnabled = true;
-            }
         }
 
         private async void OnRecordVideoClicked(object sender, EventArgs e)
         {
+            await CloseMenu();
             try
             {
                 var video = await MediaPicker.CaptureVideoAsync();
 
                 if (video != null)
                 {
-                    byte[] videoBytes;
-                    using (var stream = await video.OpenReadAsync())
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await stream.CopyToAsync(memoryStream);
-                        videoBytes = memoryStream.ToArray();
-                    }
+#if ANDROID
                     Toast.Make("A copy has been saved to your camera folder").Show();
+#endif
 
-                    await Navigation.PushAsync(new PhotoDetailPage(_database, videoBytes, isVideo: true));
+                    var filePaths = new List<string> { video.FullPath };
+                    await Navigation.PushAsync(new PhotoDetailPage(_database, filePaths));
                 }
             }
             catch (Exception ex)
@@ -141,15 +164,101 @@ namespace FieldNotesApp
                 await DisplayAlertAsync("Error", $"Failed: {ex.Message}", "OK");
             }
         }
+
+        private async void OnFabClicked(object sender, EventArgs e)
+        {
+            if (_isMenuOpen)
+            {
+                await CloseMenu();
+            }
+            else
+            {
+                await OpenMenu();
+            }
+        }
+
+        private async Task OpenMenu()
+        {
+            _isMenuOpen = true;
+
+            // Now show with animation
+            MenuItems.IsVisible = true;
+
+            // Fade overlay smoothly
+            MenuOverlay.IsVisible = true;
+            await MenuOverlay.FadeTo(0.5, 200);
+
+            // Rotate FAB icon
+            FabIcon.RotateTo(45, 250, Easing.SpringOut);
+
+            // Animate menu items
+            await Task.WhenAll(
+                MenuItems.TranslateTo(0, 0, 300, Easing.CubicOut),
+                MenuItems.FadeTo(1, 250),
+                MenuItems.ScaleTo(1, 300, Easing.SpringOut)
+            );
+        }
+
+        private async Task CloseMenu()
+        {
+            _isMenuOpen = false;
+
+            // Rotate FAB back
+            FabIcon.RotateTo(0, 200, Easing.CubicIn);
+
+            // Animate everything away
+            await Task.WhenAll(
+                MenuItems.TranslateTo(0, 50, 200, Easing.CubicIn),
+                MenuItems.FadeTo(0, 200),
+                MenuItems.ScaleTo(0.8, 200, Easing.CubicIn)
+            );
+
+            MenuOverlay.IsVisible = false;
+            MenuItems.IsVisible = false;
+            MenuOverlay.Opacity = 0.5; // Reset for next time
+        }
+
+        private async Task InitializeMenu()
+        {
+            // Pre-render menu completely off-screen
+            MenuOverlay.Opacity = 0;
+            MenuOverlay.IsVisible = true;
+            MenuItems.IsVisible = true;
+            MenuItems.Opacity = 0;
+
+            // Let it render
+            await Task.Delay(50);
+
+            // Now animate it in and immediately back out (user won't see this)
+            MenuOverlay.Opacity = 0.5;
+            await Task.WhenAll(
+                MenuItems.TranslateTo(0, 0, 1, Easing.Linear),
+                MenuItems.FadeTo(1, 1),
+                MenuItems.ScaleTo(1, 1)
+            );
+
+            // Instantly hide again
+            MenuOverlay.IsVisible = false;
+            MenuOverlay.Opacity = 0;
+            MenuItems.IsVisible = false;
+            MenuItems.TranslationY = 100;
+            MenuItems.Opacity = 0;
+            MenuItems.Scale = 0.8;
+
+            _menuInitialized = true;
+        }
+
+        private async void OnOverlayTapped(object sender, EventArgs e)
+        {
+            await CloseMenu();
+        }
+
         // Helper class for display
         public class EntryDisplayModel
         {
             public int Id { get; set; }
             public string EntryName { get; set; }
-            public bool IsVideo { get; set; }
             public DateTime CreatedAt { get; set; }
-            public string MediaTypeDisplay { get; set; }
-            public string MediaIcon { get; set; }
         }
     }
 }
