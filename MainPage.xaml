@@ -22,7 +22,7 @@
                        0" />
             </HorizontalStackLayout>
         </Border>
-        
+
         <!-- Entries list -->
         <ScrollView Grid.Row="1"
                     Margin="0,0,0,0"
@@ -40,9 +40,6 @@
                                     Stroke="LightGray">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <VerticalStackLayout Grid.Column="0">
-                                        <!--<Label Text="{Binding Id}"
-                                               FontSize="12"
-                                               TextColor="Gray" />-->
                                         <Label Text="{Binding Id, StringFormat='NoteID {0}'}"
                                                FontSize="12"
                                                TextColor="Gray"
@@ -76,36 +73,6 @@
                 </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
-        
-
-        
-        <!--Old Bottom Menu-->
-        <!-- Sticky Bottom Menu using Border --><!--
-        <Border Grid.Row="2"
-                BackgroundColor="Grey"
-                StrokeShape="RoundRectangle 20,20,0,0"
-                Padding="10"
-                VerticalOptions="End"
-                HorizontalOptions="Fill"
-                HeightRequest="60">
-            --><!-- Set fixed height --><!--
-            <HorizontalStackLayout Spacing="30"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center">
-                <Button x:Name="AddEntryButton"
-                        Text="Add Entry"
-                        Clicked="OnAddEntryClicked"
-                        HorizontalOptions="End" />
-                <Button x:Name="TakePhotoButton"
-                        Text="Take Photo"
-                        Clicked="OnTakePhotoClicked"
-                        HorizontalOptions="Center" />
-                <Button x:Name="TakeVideoButton"
-                        Text="Record Video"
-                        Clicked="OnRecordVideoClicked"
-                        HorizontalOptions="Center" />
-            </HorizontalStackLayout>
-        </Border>-->
 
         <!-- Floating Action Button Menu -->
         <AbsoluteLayout Grid.Row="1">
@@ -143,9 +110,7 @@
                         </LinearGradientBrush>
                     </Border.Background>
                     <HorizontalStackLayout Spacing="10">
-                        <!--<Label Text="📷"
-                               FontSize="20"
-                               VerticalOptions="Center" />-->
+
                         <Label Text="Add from Gallery"
                                TextColor="White"
                                FontSize="16"
@@ -171,9 +136,7 @@
                         </LinearGradientBrush>
                     </Border.Background>
                     <HorizontalStackLayout Spacing="10">
-                        <!--<Label Text="📸"
-                               FontSize="20"
-                               VerticalOptions="Center" />-->
+
                         <Label Text="Take Photo"
                                TextColor="White"
                                FontSize="16"
@@ -199,9 +162,6 @@
                         </LinearGradientBrush>
                     </Border.Background>
                     <HorizontalStackLayout Spacing="10">
-                        <!--<Label Text="🎥"
-                               FontSize="20"
-                               VerticalOptions="Center" />-->
                         <Label Text="Record Video"
                                TextColor="White"
                                FontSize="16"

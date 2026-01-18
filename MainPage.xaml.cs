@@ -222,16 +222,13 @@ namespace FieldNotesApp
 
         private async Task InitializeMenu()
         {
-            // Pre-render menu completely off-screen
             MenuOverlay.Opacity = 0;
             MenuOverlay.IsVisible = true;
             MenuItems.IsVisible = true;
             MenuItems.Opacity = 0;
 
-            // Let it render
             await Task.Delay(50);
 
-            // Now animate it in and immediately back out (user won't see this)
             MenuOverlay.Opacity = 0.5;
             await Task.WhenAll(
                 MenuItems.TranslateToAsync(0, 0, 1, Easing.Linear),
