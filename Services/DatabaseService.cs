@@ -49,6 +49,8 @@ namespace FieldNotesApp.Services
         {
             await InitAsync();
 
+            entry.SerializeFilePaths();
+
             if (entry.Id == 0)
             {
                 await _database.InsertAsync(entry);
@@ -64,15 +66,30 @@ namespace FieldNotesApp.Services
         public async Task<List<NoteEntry>> GetAllEntriesAsync()
         {
             await InitAsync();
-            return await _database.Table<NoteEntry>()
+            var entries = await _database.Table<NoteEntry>()
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
+
+            // Deserialize FilePaths for each entry
+            foreach (var entry in entries)
+            {
+                entry.DeserializeFilePaths();
+            }
+
+            return entries;
         }
 
-        public async Task<NoteEntry> GetEntryAsync(int id)
+        public async Task<NoteEntry?> GetEntryAsync(int id)
         {
             await InitAsync();
-            return await _database.Table<NoteEntry>().Where(e => e.Id == id).FirstOrDefaultAsync();
+            var entry = await _database.Table<NoteEntry>()
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
+
+            // Deserialize FilePaths if entry exists
+            entry?.DeserializeFilePaths();
+
+            return entry;
         }
 
         public async Task<int> DeleteEntryAsync(NoteEntry entry)
@@ -90,16 +107,15 @@ namespace FieldNotesApp.Services
         }
 
         // Helper method to get entry with all related data
-        public async Task<(NoteEntry entry, VoiceRecording voiceRecording)> GetFullEntryAsync(int entryId)
+        public async Task<(NoteEntry? entry, VoiceRecording? voiceRecording)> GetFullEntryAsync(int entryId)
         {
             await InitAsync();
-
             var entry = await GetEntryAsync(entryId);
+
             if (entry == null)
                 return (null, null);
 
-            VoiceRecording voiceRecording = null;
-
+            VoiceRecording? voiceRecording = null;
             if (entry.VoiceRecordingId.HasValue)
             {
                 voiceRecording = await GetVoiceRecordingAsync(entry.VoiceRecordingId.Value);

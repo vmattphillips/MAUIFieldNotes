@@ -18,7 +18,64 @@
                                   HeightRequest="300"
                                   ShouldShowPlaybackControls="true"
                                   IsVisible="False" />-->
-            
+            <!-- Media Carousel -->
+            <Border Stroke="LightGray"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 20"
+                    HeightRequest="350"
+                    BackgroundColor="Black">
+                <Grid>
+                    <CarouselView x:Name="MediaCarousel"
+                                  ItemsSource="{Binding MediaItems}"
+                                  HeightRequest="350"
+                                  IndicatorView="indicatorView"
+                                  Loop="False">
+                        <CarouselView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <!-- Image -->
+                                    <Image Source="{Binding FilePath}"
+                                           Aspect="AspectFit"
+                                           IsVisible="{Binding IsImage}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center" />
+
+                                    <!-- Video -->
+                                    <toolkit:MediaElement Source="{Binding FilePath}"
+                                                          ShouldShowPlaybackControls="True"
+                                                          ShouldAutoPlay="False"
+                                                          IsVisible="{Binding IsVideo}"
+                                                          VerticalOptions="Center"
+                                                          HorizontalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </CarouselView.ItemTemplate>
+                    </CarouselView>
+
+                    <!-- Carousel Indicators -->
+                    <IndicatorView x:Name="indicatorView"
+                                   IndicatorColor="LightGray"
+                                   SelectedIndicatorColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="End"
+                                   Margin="0,0,0,20" />
+
+                    <!-- Media counter -->
+                    <Border BackgroundColor="#99000000"
+                            StrokeThickness="0"
+                            Padding="10,5"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            Margin="10"
+                            StrokeShape="RoundRectangle 10">
+                        <Label x:Name="MediaCountLabel"
+                               Text="1 / 1"
+                               TextColor="White"
+                               FontSize="14"
+                               FontAttributes="Bold" />
+                    </Border>
+                </Grid>
+            </Border>
 
 
             <Border Stroke="Gray"
@@ -30,8 +87,7 @@
                            FontSize="18"
                            FontAttributes="Bold" />
                     <Editor x:Name="EntryNameField"
-                            TextColor="White"
-                            HeightRequest="150" />
+                            TextColor="White" />
                 </VerticalStackLayout>
             </Border>
 

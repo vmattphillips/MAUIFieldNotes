@@ -40,20 +40,35 @@
                                     Stroke="LightGray">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <VerticalStackLayout Grid.Column="0">
-                                        <Label Text="{Binding Id}"
+                                        <!--<Label Text="{Binding Id}"
                                                FontSize="12"
-                                               TextColor="Gray" />
-                                        <Label Text="{Binding MediaTypeDisplay}"
-                                               FontSize="14"
+                                               TextColor="Gray" />-->
+                                        <Label Text="{Binding Id, StringFormat='NoteID {0}'}"
+                                               FontSize="12"
+                                               TextColor="Gray"
                                                FontAttributes="Bold" />
-                                        <Label Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy HH:mm}'}"
+                                        <Label Text="{Binding NumOfMedia, StringFormat='Number of Items: {0}'}"
+                                               FontSize="14" />
+                                        <Label Text="{Binding CreatedAt, StringFormat='Last Edit: {0:MM/dd/yyyy HH:mm}'}"
                                                FontSize="12" />
                                     </VerticalStackLayout>
-                                    <Label Grid.Column="1"
-                                           FontFamily="FASolid"
-                                           Text="&#xf1f8;"
-                                           FontSize="24"
-                                           VerticalOptions="Center" />
+                                    <Border Grid.Column="1"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#FFEBEE"
+                                            StrokeShape="RoundRectangle 20"
+                                            Padding="12"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                                        <Label FontFamily="FASolid"
+                                               Text="&#xf1f8;"
+                                               FontSize="24"
+                                               TextColor="#D32F2F"
+                                               VerticalOptions="Center"
+                                               HorizontalOptions="Center" />
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnDeleteTapped" />
+                                        </Border.GestureRecognizers>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>

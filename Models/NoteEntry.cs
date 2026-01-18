@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System.Text.Json;
 
 namespace FieldNotesApp.Models
 {
@@ -7,7 +8,9 @@ namespace FieldNotesApp.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
+        [Ignore]
         public List<string> FilePaths { get; set; }
+        public string FilePathsJson { get; set; }
         public string EntryName { get; set; }
 
         [MaxLength(500)]
@@ -19,6 +22,25 @@ namespace FieldNotesApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public int? VoiceRecordingId { get; set; } // Optional Foreign key to voice recording
+
+        public void SerializeFilePaths()
+        {
+            FilePathsJson = FilePaths != null
+                ? JsonSerializer.Serialize(FilePaths)
+                : "[]"; // Empty JSON array instead of null
+        }
+
+        public void DeserializeFilePaths()
+        {
+            if (string.IsNullOrEmpty(FilePathsJson))
+            {
+                FilePaths = new List<string>();
+            }
+            else
+            {
+                FilePaths = JsonSerializer.Deserialize<List<string>>(FilePathsJson) ?? new List<string>();
+            }
+        }
     }
 
     public class VoiceRecording

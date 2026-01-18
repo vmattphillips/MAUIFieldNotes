@@ -2,6 +2,7 @@ using Microsoft.Maui.Controls;
 using CommunityToolkit.Maui.Views;
 using FieldNotesApp.Services;
 using FieldNotesApp.Models;
+using System.Collections.ObjectModel;
 
 namespace FieldNotesApp
 {
@@ -12,27 +13,30 @@ namespace FieldNotesApp
         private double? _longitude;
         private byte[] _voiceRecordingBytes;
         private int _entryId;
-        List<string> _filePaths;
+        private List<string> _filePaths;
+
+        public ObservableCollection<MediaItem> MediaItems { get; set; }
 
         public PhotoDetailPage(DatabaseService database, List<string> filepaths, int entryId = 0)
         {
             InitializeComponent();
             _database = database;
-            _entryId = entryId;  // Store the entry ID if editing
-            this._filePaths = filepaths;
-            //if (isVideo)
-            //{
-            //    VideoPlayer.IsVisible = true;
-            //    _tempVideoPath = Path.Combine(FileSystem.CacheDirectory, $"temp_video_{Guid.NewGuid()}.mp4");
-            //    File.WriteAllBytes(_tempVideoPath, mediaBytes);
-            //    VideoPlayer.Source = MediaSource.FromFile(_tempVideoPath);
-            //    VideoPlayer.ShouldAutoPlay = false;
-            //}
-            //else
-            //{
-            //    PhotoImage.IsVisible = true;
-            //    PhotoImage.Source = ImageSource.FromStream(() => new MemoryStream(mediaBytes));
-            //}
+            _entryId = entryId;
+            _filePaths = filepaths;
+
+            // Initialize media items
+            MediaItems = new ObservableCollection<MediaItem>(
+                _filePaths.Select(MediaItem.FromPath)
+            );
+
+            // Set binding context
+            BindingContext = this;
+
+            // Update media counter
+            UpdateMediaCounter();
+
+            // Listen to carousel position changes
+            MediaCarousel.CurrentItemChanged += OnCarouselItemChanged;
 
             // If editing existing entry, load its data
             if (_entryId > 0)
@@ -41,8 +45,20 @@ namespace FieldNotesApp
             }
             else
             {
-                EntryNameField.Text = "Note " +  DateTime.Now.Date.ToString();
+                EntryNameField.Text = "Note " + DateTime.Now.Date.ToString();
             }
+        }
+
+        private void OnCarouselItemChanged(object sender, CurrentItemChangedEventArgs e)
+        {
+            UpdateMediaCounter();
+        }
+
+        private void UpdateMediaCounter()
+        {
+            var currentIndex = MediaCarousel.Position;
+            var totalCount = MediaItems.Count;
+            MediaCountLabel.Text = $"{currentIndex + 1} / {totalCount}";
         }
 
         private async void LoadExistingEntry(int entryId)
@@ -107,14 +123,13 @@ namespace FieldNotesApp
 
         private async void OnRecordClicked(object sender, EventArgs e)
         {
-            DisplayAlertAsync("Coming Soon", "Voice recording will be implemented next", "OK");
+            await DisplayAlertAsync("Coming Soon", "Voice recording will be implemented next", "OK");
         }
 
         private async void OnSaveClicked(object sender, EventArgs e)
         {
             try
             {
-
                 // Save voice recording if exists
                 int? voiceRecordingId = null;
                 if (_voiceRecordingBytes != null)
@@ -125,12 +140,13 @@ namespace FieldNotesApp
                 // Create and save the entry
                 var entry = new NoteEntry
                 {
+                    Id = _entryId, // Important for updates
                     EntryName = EntryNameField.Text,
                     VoiceRecordingId = voiceRecordingId,
                     Latitude = _latitude,
                     Longitude = _longitude,
                     Notes = NotesEditor.Text,
-                    FilePaths = this._filePaths
+                    FilePaths = _filePaths
                 };
 
                 await _database.SaveNoteEntryAsync(entry);

@@ -1,7 +1,8 @@
-﻿using Microsoft.Maui.Media;
-using FieldNotesApp.Services;
+﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Maui.Alerts;
+using FieldNotesApp.Models;
+using FieldNotesApp.Services;
+using Microsoft.Maui.Media;
 
 namespace FieldNotesApp
 {
@@ -41,6 +42,7 @@ namespace FieldNotesApp
                     Id = e.Id,
                     EntryName = e.EntryName,
                     CreatedAt = e.CreatedAt,
+                    NumOfMedia = e.FilePaths.Count
                 }).OrderByDescending(e => e.CreatedAt).ToList();
 
                 EntriesCollectionView.ItemsSource = displayEntries;
@@ -186,16 +188,16 @@ namespace FieldNotesApp
 
             // Fade overlay smoothly
             MenuOverlay.IsVisible = true;
-            await MenuOverlay.FadeTo(0.5, 200);
+            await MenuOverlay.FadeToAsync(0.5, 200);
 
             // Rotate FAB icon
-            FabIcon.RotateTo(45, 250, Easing.SpringOut);
+            FabIcon.RotateToAsync(45, 250, Easing.SpringOut);
 
             // Animate menu items
             await Task.WhenAll(
-                MenuItems.TranslateTo(0, 0, 300, Easing.CubicOut),
-                MenuItems.FadeTo(1, 250),
-                MenuItems.ScaleTo(1, 300, Easing.SpringOut)
+                MenuItems.TranslateToAsync(0, 0, 300, Easing.CubicOut),
+                MenuItems.FadeToAsync(1, 250),
+                MenuItems.ScaleToAsync(1, 300, Easing.SpringOut)
             );
         }
 
@@ -204,13 +206,13 @@ namespace FieldNotesApp
             _isMenuOpen = false;
 
             // Rotate FAB back
-            FabIcon.RotateTo(0, 200, Easing.CubicIn);
+            FabIcon.RotateToAsync(0, 200, Easing.CubicIn);
 
             // Animate everything away
             await Task.WhenAll(
-                MenuItems.TranslateTo(0, 50, 200, Easing.CubicIn),
-                MenuItems.FadeTo(0, 200),
-                MenuItems.ScaleTo(0.8, 200, Easing.CubicIn)
+                MenuItems.TranslateToAsync(0, 50, 200, Easing.CubicIn),
+                MenuItems.FadeToAsync(0, 200),
+                MenuItems.ScaleToAsync(0.8, 200, Easing.CubicIn)
             );
 
             MenuOverlay.IsVisible = false;
@@ -232,9 +234,9 @@ namespace FieldNotesApp
             // Now animate it in and immediately back out (user won't see this)
             MenuOverlay.Opacity = 0.5;
             await Task.WhenAll(
-                MenuItems.TranslateTo(0, 0, 1, Easing.Linear),
-                MenuItems.FadeTo(1, 1),
-                MenuItems.ScaleTo(1, 1)
+                MenuItems.TranslateToAsync(0, 0, 1, Easing.Linear),
+                MenuItems.FadeToAsync(1, 1),
+                MenuItems.ScaleToAsync(1, 1)
             );
 
             // Instantly hide again
@@ -253,12 +255,40 @@ namespace FieldNotesApp
             await CloseMenu();
         }
 
+        private async void OnDeleteTapped(object sender, EventArgs e)
+        {
+            var border = (Border)sender;
+            var displayEntry = (EntryDisplayModel)border.BindingContext;
+
+            bool confirm = await DisplayAlertAsync(
+                "Delete Entry",
+                "Are you sure you want to delete this entry? The Photo will remain in your gallery.",
+                "Yes",
+                "No");
+
+            if (confirm)
+            {
+                var fullEntry = await this._database.GetEntryAsync(displayEntry.Id);
+
+                if (fullEntry != null)
+                {
+                    await this._database.DeleteEntryAsync(fullEntry);
+                    LoadEntries();
+                }
+                else
+                {
+                    await DisplayAlertAsync("Error", "Entry not found", "OK");
+                }
+            }
+        }
+
         // Helper class for display
         public class EntryDisplayModel
         {
             public int Id { get; set; }
             public string EntryName { get; set; }
             public DateTime CreatedAt { get; set; }
+            public int NumOfMedia {get; set; }
         }
     }
 }
